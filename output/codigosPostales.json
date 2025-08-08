@@ -1,0 +1,26 @@
+{
+  "Ciudad de México": [
+    { "colonia": "Centro", "codigoPostal": "06000" },
+    { "colonia": "Polanco", "codigoPostal": "11560" }
+  ],
+  "Jalisco": [
+    { "colonia": "Centro", "codigoPostal": "44100" },
+    { "colonia": "Zapopan", "codigoPostal": "45010" }
+  ],
+  "Nuevo León": [
+    { "colonia": "Centro", "codigoPostal": "64000" },
+    { "colonia": "San Pedro Garza García", "codigoPostal": "66260" }
+  ],
+  "Veracruz": [
+    { "colonia": "Boca del Río", "codigoPostal": "94290" },
+    { "colonia": "Orizaba Centro", "codigoPostal": "94300" }
+  ],
+  "Puebla": [
+    { "colonia": "Centro", "codigoPostal": "72000" },
+    { "colonia": "Cholula", "codigoPostal": "72760" }
+  ],
+  "Yucatán": [
+    { "colonia": "Centro Mérida", "codigoPostal": "97000" },
+    { "colonia": "Progreso", "codigoPostal": "97320" }
+  ]
+}
