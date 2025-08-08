@@ -1,4 +1,5 @@
 const puppeteer = require("puppeteer-core");
+const puppeteer = require("puppeteer");
 const chromium = require("@sparticuz/chromium");
 const fs = require("fs");
 const path = require("path");
@@ -17,9 +18,8 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
 
   // Lanzar navegador con configuración compatible para Vercel serverless
   const navegador = await puppeteer.launch({
-    args: chromium.args,
-    executablePath: await chromium.executablePath,
-    headless: chromium.headless,
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
   const pagina = await navegador.newPage();
