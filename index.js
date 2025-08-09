@@ -1,5 +1,5 @@
-// Importaciones necesarias
 const express = require("express");
+const cors = require("cors"); // Importa el paquete cors
 const scrapearCompuTrabajo = require("./scrapearCompuTrabajo.js");
 let fetch;
 try {
@@ -11,25 +11,14 @@ try {
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware CORS manual
-// Esto es un método robusto para asegurarnos de que el servidor responde a TODAS las peticiones,
-// incluyendo las de preflight (OPTIONS), con las cabeceras necesarias.
-app.use((req, res, next) => {
-  // Permite el acceso desde cualquier origen
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  // Permite los métodos que necesitas
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  // Permite las cabeceras que el navegador envía
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-  // Si la petición es de tipo OPTIONS (preflight), responde inmediatamente.
-  if (req.method === "OPTIONS") {
-    res.sendStatus(204);
-  } else {
-    // Si no es una petición OPTIONS, continúa con el siguiente middleware o ruta.
-    next();
-  }
-});
+// Configuración CORS usando el paquete cors
+const corsOptions = {
+  origin: "https://compu-trabajo-completo.vercel.app", // Dominio de tu frontend en Vercel
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 200, // Para legacy browsers
+};
+app.use(cors(corsOptions));
 
 // Middleware logger opcional para verificar orígenes de las peticiones
 app.use((req, res, next) => {
