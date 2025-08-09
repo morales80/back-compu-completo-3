@@ -1,5 +1,4 @@
 const puppeteer = require("puppeteer");
-const chromium = require("@sparticuz/chromium");
 const fs = require("fs");
 const path = require("path");
 const { Parser } = require("json2csv");
