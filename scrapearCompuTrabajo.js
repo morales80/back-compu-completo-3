@@ -66,15 +66,14 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
     });
 
     if (haySiguiente) {
-      // Esperar navegación o un tiempo fijo tras click en siguiente
       try {
         await pagina.waitForNavigation({
           waitUntil: "networkidle2",
           timeout: 10000,
         });
       } catch {
-        // Si falla navegación, espera fija para evitar bloqueo
-        await pagina.waitForTimeout(3000);
+        // Aquí usamos setTimeout con promesa en vez de waitForTimeout
+        await new Promise((resolve) => setTimeout(resolve, 3000));
       }
       paginaActual++;
     } else {
@@ -116,7 +115,8 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
       });
 
       trabajos.push(datosTrabajo);
-      await pagina.waitForTimeout(500);
+      // Cambio aquí para la pausa, compatible con tu versión
+      await new Promise((resolve) => setTimeout(resolve, 500));
     } catch (err) {
       console.error(
         ":::::::Error accediendo al trabajo::::::::::",
