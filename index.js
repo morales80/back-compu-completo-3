@@ -12,7 +12,12 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Usa el paquete oficial cors ANTES de cualquier ruta o middleware que responda
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+);
 
 // Middleware para responder correctamente a OPTIONS con cabeceras explícitas
 app.use((req, res, next) => {
