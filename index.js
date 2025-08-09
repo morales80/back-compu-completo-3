@@ -58,10 +58,28 @@ app.post("/buscar", async (req, res) => {
   }
 
   try {
-    const resultados = await scrapearCompuTrabajo(busqueda);
-    res.json({ cantidad: resultados.length, trabajos: resultados });
+    // Ejecutar el scrap (suponiendo que esta función termina cuando el archivo está listo)
+    await scrapearCompuTrabajo(busqueda);
+
+    // Construir el nombre del archivo JSON esperado en output
+    // Aquí debes ajustar el nombre según cómo lo generes, ejemplo: `${busqueda}.json`
+    const nombreArchivo = `./output/${busqueda}.json`;
+
+    // Leer el archivo JSON generado
+    const contenido = await fs.readFile(nombreArchivo, "utf-8");
+
+    // Parsear el JSON
+    const datos = JSON.parse(contenido);
+
+    // Verificar que el arreglo no esté vacío
+    if (!Array.isArray(datos) || datos.length === 0) {
+      return res.status(404).json({ error: "No se encontraron resultados" });
+    }
+
+    // Enviar los datos al cliente
+    res.json({ cantidad: datos.length, trabajos: datos });
   } catch (err) {
-    console.error("Error al hacer scraping:", err);
+    console.error("Error al hacer scraping o leer archivo:", err);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
