@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const fs = require("fs").promises;
+
 const scrapearCompuTrabajo = require("./scrapearCompuTrabajo.js");
 let fetch;
 try {
