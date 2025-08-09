@@ -1,8 +1,11 @@
+const puppeteer = require("puppeteer-core");
 const puppeteer = require("puppeteer");
 const chromium = require("@sparticuz/chromium");
 const fs = require("fs");
 const path = require("path");
 const { Parser } = require("json2csv");
+
+// Usa la ruta correcta a tu módulo para exportar Excel (igual que antes)
 const exportarExcel = require("./src/js/exportarExcel");
 
 module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
@@ -13,23 +16,12 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
     `:::::: Iniciando búsqueda para scrapear: ${elementoABuscar} ::::::`
   );
 
-  // Lanzar navegador con configuraciones necesarias para modo headless en entorno server
   const navegador = await puppeteer.launch({
-    headless: true, // obligatorio para Render y entornos sin GUI
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-blink-features=AutomationControlled",
-    ],
+    headless: false,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
   const pagina = await navegador.newPage();
-
-  // Evitar detección de Puppeteer controlando el navegador
-  await pagina.evaluateOnNewDocument(() => {
-    Object.defineProperty(navigator, "webdriver", { get: () => false });
-  });
-
   await pagina.goto(URL, { waitUntil: "networkidle2" });
 
   let trabajos = [];
@@ -53,6 +45,7 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
     );
     linksGlobales.push(...linksDeTrabajos);
 
+    // Buscar y hacer click en botón siguiente, controlar paginación
     btnSiguientePaginaActivo = await pagina.evaluate(() => {
       const btnSiguiente = Array.from(
         document.querySelectorAll("span.b_primary.w48.buildLink.cp")
@@ -69,7 +62,7 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
 
     if (btnSiguientePaginaActivo) {
       paginaActual++;
-      // Espera para que cargue la siguiente página
+      // Esperar un tiempo razonable para que cargue la siguiente página
       await pagina.waitForTimeout(1500);
     }
   }
@@ -117,7 +110,6 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
       });
 
       trabajos.push(datosTrabajo);
-
       await pagina.waitForTimeout(500);
     } catch (err) {
       console.error(
@@ -125,6 +117,7 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
         link,
         err.message
       );
+      // Puedes guardar errores por si quieres debug después
       trabajos.push({
         error: true,
         link,
@@ -179,11 +172,11 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
   // Guardar Excel
   await exportarExcel(
     trabajos,
-    "resultadosCompuTrabajo.xlsx",
-    outputDir,
-    "trabajos"
+    "resultadosCompuTrabajo.xlsx", // Nombre archivo Excel que quieras
+    outputDir, // Carpeta destino
+    "trabajos" // Nombre de hoja
   );
 
-  // Retornar datos
+  // Devuelvo los trabajos para que se usen en el backend o lo que necesites
   return trabajos;
 };
