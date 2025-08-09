@@ -1,5 +1,5 @@
 const express = require("express");
-const cors = require("cors"); // Importa el paquete cors
+const cors = require("cors");
 const scrapearCompuTrabajo = require("./scrapearCompuTrabajo.js");
 let fetch;
 try {
@@ -11,16 +11,31 @@ try {
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuración CORS usando el paquete cors
-const corsOptions = {
-  origin: "https://compu-trabajo-completo.vercel.app", // Dominio de tu frontend en Vercel
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  optionsSuccessStatus: 200, // Para legacy browsers
-};
-app.use(cors(corsOptions));
+// Usa el paquete oficial cors ANTES de cualquier ruta o middleware que responda
+app.use(
+  cors({
+    origin: "https://compu-trabajo-completo.vercel.app", // o "*" para todos los orígenes
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 200,
+  })
+);
 
-// Middleware logger opcional para verificar orígenes de las peticiones
+// Middleware para responder correctamente a OPTIONS con cabeceras explícitas
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization"
+    );
+    return res.status(200).end();
+  }
+  next();
+});
+
+// Middleware logger opcional
 app.use((req, res, next) => {
   console.log(
     `Incoming ${req.method} request to ${req.url} from origin: ${req.headers.origin}`
