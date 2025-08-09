@@ -12,14 +12,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Usa el paquete oficial cors ANTES de cualquier ruta o middleware que responda
-app.use(
-  cors({
-    origin: "https://compu-trabajo-completo.vercel.app", // o "*" para todos los orígenes
-    methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    optionsSuccessStatus: 200,
-  })
-);
+app.use(cors());
 
 // Middleware para responder correctamente a OPTIONS con cabeceras explícitas
 app.use((req, res, next) => {
