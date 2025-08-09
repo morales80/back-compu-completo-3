@@ -65,7 +65,7 @@ app.post("/buscar", async (req, res) => {
 
     // Construir el nombre del archivo JSON esperado en output
     // Aquí debes ajustar el nombre según cómo lo generes, ejemplo: `${busqueda}.json`
-    const nombreArchivo = `./output/${busqueda}.json`;
+    const nombreArchivo = `./output/resultadosCompuTrabajo.json`;
 
     // Leer el archivo JSON generado
     const contenido = await fs.readFile(nombreArchivo, "utf-8");
