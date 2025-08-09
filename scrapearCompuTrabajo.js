@@ -15,7 +15,7 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
   );
 
   const navegador = await puppeteer.launch({
-    headless: false,
+    headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
