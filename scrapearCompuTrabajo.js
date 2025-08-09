@@ -1,4 +1,3 @@
-const puppeteer = require("puppeteer-core");
 const puppeteer = require("puppeteer");
 const chromium = require("@sparticuz/chromium");
 const fs = require("fs");
