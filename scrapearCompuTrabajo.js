@@ -20,34 +20,41 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
   });
 
   const pagina = await navegador.newPage();
+
+  // Cambiar User-Agent para evitar detección de headless
+  await pagina.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+  );
+
   await pagina.goto(URL, { waitUntil: "networkidle2" });
 
   let trabajos = [];
   let paginaActual = 1;
+  const maxPaginas = 20; // Limite para evitar loops infinitos
   let btnSiguientePaginaActivo = true;
   let linksGlobales = [];
 
-  while (btnSiguientePaginaActivo) {
+  while (btnSiguientePaginaActivo && paginaActual <= maxPaginas) {
     console.log(
       `:::::::::Página ${paginaActual} cargada. Buscando enlaces::::::`
     );
 
-    const linksDeTrabajos = await pagina.evaluate(() => {
-      return Array.from(
+    const linksDeTrabajos = await pagina.evaluate(() =>
+      Array.from(
         document.querySelectorAll("article.box_offer h2.fs18.fwB a")
-      ).map((a) => a.href);
-    });
+      ).map((a) => a.href)
+    );
 
     console.log(
       `:::::Se encontraron ${linksDeTrabajos.length} enlaces::::::::`
     );
     linksGlobales.push(...linksDeTrabajos);
 
-    // Buscar y hacer click en botón siguiente, controlar paginación
-    btnSiguientePaginaActivo = await pagina.evaluate(() => {
+    const haySiguiente = await pagina.evaluate(() => {
       const btnSiguiente = Array.from(
         document.querySelectorAll("span.b_primary.w48.buildLink.cp")
       ).find((btn) => btn.getAttribute("title") === "Siguiente");
+
       if (
         btnSiguiente &&
         !btnSiguiente.classList.contains("s-pagination-disabled")
@@ -58,10 +65,20 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
       return false;
     });
 
-    if (btnSiguientePaginaActivo) {
+    if (haySiguiente) {
+      // Esperar navegación o un tiempo fijo tras click en siguiente
+      try {
+        await pagina.waitForNavigation({
+          waitUntil: "networkidle2",
+          timeout: 10000,
+        });
+      } catch {
+        // Si falla navegación, espera fija para evitar bloqueo
+        await pagina.waitForTimeout(3000);
+      }
       paginaActual++;
-      // Esperar un tiempo razonable para que cargue la siguiente página
-      await pagina.waitForTimeout(1500);
+    } else {
+      btnSiguientePaginaActivo = false;
     }
   }
 
@@ -76,25 +93,16 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
         const getText = (selector) =>
           document.querySelector(selector)?.innerText.trim() || "No disponible";
 
-        const titulo = getText(
-          "body>main.detail_fs>div.container>h1.fwB.fs24.mb5.box_detail.w100_m"
-        );
+        // Selectores simplificados
+        const titulo = getText("h1.fwB.fs24.mb5.box_detail.w100_m");
         const empresa = getText(
-          "body>main.detail_fs>div.box_border.menu_top.dFlex>div.container>div.fr.pt10.box_resume.hide_m>div.box_border>div.info_company.dFlex.vm_fx.mb10>div.w100>a.dIB.fs16.js-o-link"
+          "div.info_company.dFlex.vm_fx.mb10 div.w100 > a.dIB.fs16.js-o-link"
         );
-        const ubicacion = getText("body>main.detail_fs>div.container>p.fs16");
-        const modalidad = getText(
-          "body>main.detail_fs>div.box_border.menu_top.dFlex>div.container>div.box_detail.fl.w100_m>div.mb40.pb40.bb1>div.mbB>:last-of-type"
-        );
-        const salario = getText(
-          "body>main.detail_fs>div.box_border.menu_top.dFlex>div.container>div.box_detail.fl.w100_m>div.mb40.pb40.bb1>div.mbB>:first-of-type"
-        );
-        const fechaPublicacion = getText(
-          "body>main.detail_fs>div.box_border.menu_top.dFlex>div.container>div.box_detail.fl.w100_m>div.mb40.pb40.bb1>p.fc_aux.fs13:last-of-type"
-        );
-        const descripcion = getText(
-          "body>main.detail_fs>div.box_border.menu_top.dFlex>div.container>div.box_detail.fl.w100_m>div.mb40.pb40.bb1>p.mbB"
-        );
+        const ubicacion = getText("div.container > p.fs16");
+        const modalidad = getText("div.mbB :last-of-type");
+        const salario = getText("div.mbB :first-of-type");
+        const fechaPublicacion = getText("p.fc_aux.fs13:last-of-type");
+        const descripcion = getText("p.mbB");
 
         return {
           titulo,
@@ -115,7 +123,6 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
         link,
         err.message
       );
-      // Puedes guardar errores por si quieres debug después
       trabajos.push({
         error: true,
         link,
@@ -170,9 +177,9 @@ module.exports = async function scrapearCompuTrabajo(elementoABuscar) {
   // Guardar Excel
   await exportarExcel(
     trabajos,
-    "resultadosCompuTrabajo.xlsx", // Nombre archivo Excel que quieras
-    outputDir, // Carpeta destino
-    "trabajos" // Nombre de hoja
+    "resultadosCompuTrabajo.xlsx",
+    outputDir,
+    "trabajos"
   );
 
   // Devuelvo los trabajos para que se usen en el backend o lo que necesites
